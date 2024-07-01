@@ -161,23 +161,22 @@
 	counter();
   
 	// Function to fetch and display folder content in a lightbox
-	function fetchAndDisplayContent(folder) {
+	function fetchAndDisplayContent(jsonFile) {
 	  $.ajax({
-		url: 'list_files.php',
+		url: jsonFile,
 		type: 'GET',
-		data: { folder: folder },
+		dataType: 'json',
 		success: function(data) {
 		  try {
-			var files = JSON.parse(data);
+			var files = data.files;
 			var items = [];
 			files.forEach(function(file) {
 			  var ext = file.split('.').pop().toLowerCase();
-			  var filePath = folder + '/' + file;
 			  if (['jpg', 'jpeg', 'png', 'gif'].includes(ext)) {
-				items.push({ src: filePath, type: 'image' });
+				items.push({ src: file, type: 'image' });
 			  } else if (['mp4', 'webm'].includes(ext)) {
 				items.push({ 
-				  src: `<video controls style="width: 80%; height: auto;"><source src="${filePath}" type="video/${ext}"></video>`, 
+				  src: `<video controls style="width: 100%; height: auto;"><source src="${file}" type="video/${ext}"></video>`, 
 				  type: 'inline' 
 				});
 			  }
@@ -206,7 +205,7 @@
 	// Event listener for anchor links
 	$('.portfolio-wrap a').on('click', function(event) {
 	  event.preventDefault();
-	  var folder = $(this).attr('href');
+	  var folder = $(this).attr('href').replace('images/', '') + '.json';
 	  fetchAndDisplayContent(folder);
 	});
   

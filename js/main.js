@@ -159,51 +159,79 @@
 	  }, { offset: '95%' });
 	}
 	counter();
+
+	 // Function to convert Google Drive links to embeddable format
+	 function formatGoogleDriveLink(link) {
+		const googleDriveFilePattern = /drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]+)/;
+		const match = link.match(googleDriveFilePattern);
+		if (match && match[1]) {
+		  const fileId = match[1];
+		  const isImage = /\.(jpg|jpeg|png|gif)$/i.test(link);
+		  if (isImage) {
+			return `https://drive.google.com/uc?export=view&id=${fileId}`;
+		  } else {
+			return `https://drive.google.com/file/d/${fileId}/preview`;
+		  }
+		}
+		return link;
+	  }
   
 	// Function to fetch and display folder content in a lightbox
 	function fetchAndDisplayContent(jsonFile) {
-	  $.ajax({
-		url: jsonFile,
-		type: 'GET',
-		dataType: 'json',
-		success: function(data) {
-		  try {
-			var files = data.files;
-			var items = [];
-			files.forEach(function(file) {
-			  var ext = file.split('.').pop().toLowerCase();
-			  if (['jpg', 'jpeg', 'png', 'gif'].includes(ext)) {
-				items.push({ src: file, type: 'image' });
-			  } else if (['mp4', 'webm'].includes(ext)) {
-				items.push({ 
-				  src: `<video controls style="width: 100%; height: auto;"><source src="${file}" type="video/${ext}"></video>`, 
-				  type: 'inline' 
-				});
-			  }
-			});
-  
-			if (items.length > 0) {
-			  $.magnificPopup.open({
-				items: items,
-				gallery: { enabled: true },
-				type: 'inline'
+		$.ajax({
+		  url: jsonFile,
+		  type: 'GET',
+		  dataType: 'json',
+		  success: function(data) {
+			try {
+			  var files = data.files;
+			  var items = [];
+			  files.forEach(function(file) {
+				var ext = file.split('.').pop().toLowerCase();
+				var formattedLink = formatGoogleDriveLink(file);
+	
+				if (['jpg', 'jpeg', 'png', 'gif'].includes(ext) || formattedLink.includes("uc?export=view")) {
+				  // Image
+				  items.push({ src: formattedLink, type: 'image' });
+				} else if (['mp4', 'webm'].includes(ext)) {
+				  // Video
+				  items.push({ 
+					src: `<video controls style="width: 80%; height: auto;"><source src="${formattedLink}" type="video/${ext}"></video>`, 
+					type: 'inline' 
+				  });
+				}
+				else if(formattedLink.includes("/preview")){
+					items.push({ 
+						// src: `<iframe src="${formattedLink}" width="100%" height="auto" allow="autoplay"></iframe>`, 
+						src: `<iframe src="${formattedLink}" width="880vh" height="500vh" allow="autoplay" frameborder="0" style="border: none;"></iframe>`, 
+
+						type: 'inline' 
+					  });
+				}
 			  });
-			} else {
-			  alert('No media files found in the folder.');
+	
+			  if (items.length > 0) {
+				$.magnificPopup.open({
+				  items: items,
+				  gallery: { enabled: true },
+				  type: 'inline'
+				});
+			  } else {
+				alert('No media files found in the folder.');
+			  }
+			} catch (e) {
+			  console.error('Error parsing JSON:', e, data);
+			  alert('Error loading folder contents.');
 			}
-		  } catch (e) {
-			console.error('Error parsing JSON:', e, data);
+		  },
+		  error: function() {
 			alert('Error loading folder contents.');
 		  }
-		},
-		error: function() {
-		  alert('Error loading folder contents.');
-		}
-	  });
-	}
+		});
+	  }
   
 	// Event listener for anchor links
-	$('.portfolio-wrap a').on('click', function(event) {
+	$('.portfolio-wrap a.data').on('click', function(event) {
 	  event.preventDefault();
 	  var folder = $(this).attr('href').replace('images/', '') + '.json';
 	  fetchAndDisplayContent(folder);

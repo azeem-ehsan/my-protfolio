@@ -9413,3 +9413,44 @@ textarea.form-control {
       background:  #23f3b2;
       box-shadow: 0px 0px 0 0px rgb(255 255 255)!important;
     }
+
+
+    .hero-section-img{
+      /* background-image: url(); */
+      background-size: cover;
+      background-repeat: no-repeat;
+      background-position: center center;
+    /* Add a stroke (outline) effect to the background image using a pseudo-element */
+    position: relative;
+    z-index: 1;
+  }
+  .hero-section-img::before {
+    content: "";
+    position: absolute;
+    top: -8px;
+    /* left: -8px; */
+    right: -8px;
+    bottom: 16px;
+    z-index: -1;
+    border-radius: 25px;
+    pointer-events: none;
+    /* Simulate a stroke with a colored border and a blur for glow effect */
+    border-right: 2px solid var(--yellow);
+    box-shadow: 0 0 8px 2px var(--yellow), 0 0 0 8px #000;
+    opacity: 0.8;
+    transition: box-shadow 0.4s cubic-bezier(.4,0,.2,1), opacity 0.4s cubic-bezier(.4,0,.2,1);
+  }
+  .hero-section-img:hover::before {
+    box-shadow: 0 0 16px 4px var(--yellow), 0 0 0 6px #000;
+    opacity: 1;
+    animation: hero-stroke-glow 1s alternate infinite;
+  }
+
+  @keyframes hero-stroke-glow {
+    0% {
+      box-shadow: 0 0 16px 4px var(--yellow), 0 0 0 6px #000;
+    }
+    100% {
+      box-shadow: 0 0 24px 8px var(--yellow), 0 0 0 8px #000;
+    }
+    }
